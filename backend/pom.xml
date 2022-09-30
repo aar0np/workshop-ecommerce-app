@@ -36,11 +36,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-cassandra</artifactId>
 		</dependency>
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.datastax.astra</groupId>
 			<artifactId>astra-spring-boot-starter</artifactId>
 			<version>0.3.0</version>
-		</dependency>
+		</dependency> -->
 
 		<!-- Pulsar -->
 		<dependency>
