@@ -11,9 +11,9 @@ import org.apache.pulsar.shade.com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EcomOrderProcessor {
 
-	private static final String SERVICE_URL = System.getenv("ASTRA_STREAM_URL");
-	private static final String YOUR_PULSAR_TOKEN = System.getenv("ASTRA_STREAM_TOKEN");
-	private static final String STREAMING_TENANT = System.getenv("ASTRA_STREAM_TENANT");
+	private static final String SERVICE_URL = System.getenv("PULSAR_STREAM_URL");
+	// private static final String YOUR_PULSAR_TOKEN = System.getenv("ASTRA_STREAM_TOKEN");
+	private static final String STREAMING_TENANT = System.getenv("PULSAR_STREAM_TENANT");
 	private static final String STREAMING_PREFIX = STREAMING_TENANT + "/default/";
 	private static final String SUBSCRIPTION_NAME = "ecom-subscription";
 	
@@ -66,7 +66,8 @@ public class EcomOrderProcessor {
 	        					.subscriptionType(SubscriptionType.Shared)
 	        					.subscribe();
 	        			
-	        			msg = consumer.receive(1, TimeUnit.SECONDS);
+	        			// msg = consumer.receive(1, TimeUnit.SECONDS);
+	        			msg = consumer.receive();
 	        			
 	        			if (msg != null) {
 	        				consumer.acknowledge(msg);
@@ -215,15 +216,15 @@ public class EcomOrderProcessor {
 	}
 	
 	private static PulsarClient initializeClient(String topic) {
-		System.out.println("topic=" + STREAMING_PREFIX + topic);
+		System.out.println("topic=" + topic);
 
 		try {
 	        // Create client object
 	        PulsarClient client = PulsarClient.builder()
 	                .serviceUrl(SERVICE_URL)
-	                .authentication(
-	                    AuthenticationFactory.token(YOUR_PULSAR_TOKEN)
-	                )
+//	                .authentication(
+//	                    AuthenticationFactory.token(YOUR_PULSAR_TOKEN)
+//	                )
 	                .build();
 	       
 	        return client;

@@ -1,7 +1,6 @@
 <!--- STARTEXCLUDE --->
 ## 🔥 Building an E-commerce Website 🔥
 
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-ecommerce-app)
 [![License Apache2](https://img.shields.io/hexpm/l/plug.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Discord](https://img.shields.io/discord/685554030159593522)](https://discord.com/widget?id=685554030159593522&theme=dark)
 
@@ -20,24 +19,14 @@ It doesn't matter if you join our workshop live or you prefer to do at your own 
 
 If you cannot attend this workshop live, recordings of this workshop and many more is available on [Youtube](https://youtube.com/datastaxdevs).
 
-## Homework
-
-<img src="data/img/build-an-ecommerce-app.png" width="200" align=right />
-
-Complete the homework to earn the badge for this workshop (**awarded only at the end of the series**).
-
-1. Implement Google login and take SCREENSHOT(s).
-2. Don't worry about submitting it just yet.  We'll have instructions on how to do that at the end of the series!
-
 ## 📋 Table of contents
 
 1. [Introduction](#1-introduction)
-2. [Create your Database](#2-create-astra-db-instance)
+2. [Create your Database](#2-create-your-cassandra-instance)
 3. [Create your schema](#3-create-your-schema)
 4. [Populate the dataset](#4-populate-the-data)
-5. [Create a token](#5-create-your-token)
+5. [Create your Broker](#5-create-your-pulsar-instance)
 6. [Setup your application](#6-setup-your-application)
-7. [Run Unit Tests](#7-run-unit-tests)
 8. [Enable Social Login](#8-enable-social-login)
 9. [Start the Application](#9-start-the-application)
 
@@ -49,87 +38,8 @@ Worldwide digital sales in 2020 eclipsed four trillion dollars (USD).  Businesse
 
 Why does an e-commerce site need to be fast?  Because most consumers will leave a web page or a mobile app if it takes longer than a few seconds to load.  In the content below, we will cover how to build high-performing data models and services, helping you to build a e-commerce site with high throughput and low latency.
 
-## 2. Create Astra DB and Streaming Instances
+## 2. Create Your Cassandra Instance
 
-You can skip to step 2c if you have already created a keyspace `ecommerce` in database `demos`. Otherwise (if you did not attend the previous installment of the e-commerce worksop):
-
-**`ASTRA DB`** is the simplest way to run Cassandra with zero operations - just push the button and get your cluster. No credit card required, $25.00 USD credit every month, roughly 20M read/write operations, 80GB storage monthly - sufficient to run small production workloads.
-
-#### ✅ 2a. Register
-
-If you do not have an account yet, register and sign in to Astra DB: This is FREE and NO CREDIT CARD is required. [https://astra.datastax.com](https://astra.dev/5-4): You can use your `Github`, `Google` accounts or register with an `email`.
-
-_Make sure to chose a password with minimum 8 characters, containing upper and lowercase letters, at least one number and special character_
-
-#### ✅ 2b. Create a DB on the "FREE" plan
-
-Follow this [guide](https://docs.datastax.com/en/astra/docs/creating-your-astra-database.html), to set up a pay as you go database with a free $25 monthly credit. You will find below recommended values to enter:
-
-- **For the database name** - `demos`
-
-- **For the keyspace name** - `ecommerce`
-
-_You can technically use whatever name(s) you want and update the code to reflect the keyspace. This is really to get you on a happy path for the first run._
-
-- **For provider and region**: For Astra DB, select GCP as a provider and then the related region is where your database will reside physically (choose one close to you or your users).
-
-- **Create the database**. Review all the fields to make sure they are as shown, and click the `Create Database` button.
-
-**👁️ Walkthrough**
-
-*The Walkthrough mentions a different keyspace, make sure to use `ecommerce`*
-
-![image](data/img/astra-create-db.gif?raw=true)
-You will see your new database `pending` in the Dashboard.
-
-![my-pic](data/img/db-pending.png?raw=true)
-
-#### ✅ 2c. Ensure the database turns to active state
-
-To connect to the database programmatically, you need to make sure the status will change to `Active`. This happens when the database is ready, and will only take 2-3 minutes. You will also receive an email when it is ready.
-
-**👁️ Expected Output**
-
-![my-pic](data/img/db-active.png?raw=true)
-
-If it's in a `standby` state you can hit `Connect` and `CQL Console` on top.
-
-You should see a message something like below.
-
-**👁️ Expected Output**
-
-```cql
-{"message":"Resuming your database, please try again shortly."}
-```
-
-#### ✅ 2d. Create a Streaming Tenant and Topics on the "FREE" plan
-
-Here we will walk through how to create an Astra Streaming Tenant.  Start by clicking the "Create Stream" button in the left navigation pane.
-
-![image](data/img/create-stream.png?raw=true)
-
-On the next page, provide a name for your tenant and select a provider/region.  Click the blue "Create Tenant" button when complete.
-
-![image](data/img/create_streaming_tenant.png?raw=true)
-
-Note that Tenant Names must be unique across providers.  To ensure uniqueness, name it "ecommerce-" followed by your name or company.
-
-Now we need to create topics _within_ our tenant.  Click on the link or on the "Topics" tab.  You should see the "default" namespace with an "Add Topic" button (on the right).  Click the "Add Topic" button.
-
-![image](data/img/add_topic1.png?raw=true)
-
-Name the topic "pending-orders" and make sure that the "Persistent" switch is selected.  Don't worry about the "Partitioned" switch for now.  Click the "Add Topic" button when ready.
-
-![image](data/img/add_topic2.png?raw=true)
-
-Repeat this process to add 3 more topics:
- - picked-orders
- - shipped-orders
- - completed-orders
-
-When you are done, your "Topics" tab should look similar to this:
-
-![image](data/img/streaming_topics_final.png?raw=true)
 
 [🏠 Back to Table of Contents](#-table-of-contents)
 
@@ -480,129 +390,31 @@ select * from CATEGORY;
 
 [🏠 Back to Table of Contents](#-table-of-contents)
 
-## 5. Create your tokens
+## 5. Create your Pulsar instance
 
-#### ✅ 5a. Create the Astra DB token
-
-Following the [Manage Application Tokens docs](https://docs.datastax.com/en/astra/docs/manage-application-tokens.html) create a token with `Database Admnistrator` roles.
-
-- Go the `Organization Settings`
-
-- Go to `Token Management`
-
-- Pick the role `Database Administrator` on the select box
-
-- Click Generate token
-
-**👁️ Walkthrough**
-
-![image](data/img/astra-create-token.gif?raw=true)
-
-This is what the token page looks like. You can now download the values as a CSV. We will need those values but you can also keep this window open for use later.
-
-![image](data/img/astra-token.png?raw=true)
-
-- `appToken:` We will use it as a api token Key to interact with APIs.
-
-#### ✅ 5b. Save your DB token locally
-
-To know more about roles of each token you can have a look to [this video.](https://www.youtube.com/watch?v=TUTCLsBuUd4&list=PL2g2h-wyI4SpWK1G3UaxXhzZc6aUFXbvL&index=8)
-
-**Note: Make sure you don't close the window accidentally or otherwise - if you close this window before you copy the values, the application token is lost forever. They won't be available later for security reasons.**
-
-We are now set with the database and credentials and will incorporate them into the application as we will see below.
-
-[🏠 Back to Table of Contents](#-table-of-contents)
-
-#### ✅ 5c. View the Astra Streaming token and connection details
-
-Click on the "Connect" tab.  Take note of your tenant name and broker service URL.  It's a good idea to copy/paste those into a text editor for now.  When you're ready, click on the "Token Manager" link.
-
-![image](data/img/broker_service_url.png?raw=true)
-
-You should have one token created by default.  Click on the copy icon on the right.  Paste your token into a text editor for now.
-
-![image](data/img/copy_stream_token.png?raw=true)
-
-Later on, we will use this information to populate environment variables, allowing us to connect to our Astra Streaming tenant.  It will be similar to the example below:
+So if you're running on a Mac, you'll likely get a Netty error when trying to resolve DNS.  Need to run it containerized!
 
 ```
-export ASTRA_STREAM_TENANT=ecommerce-aaron
-export ASTRA_STREAM_URL="pulsar+ssl://pulsar-gcp-uscentral1.streaming.datastax.com:6651"
-export ASTRA_STREAM_TOKEN="eyJhMBhGYBlahBlahBlahNotARealToken37hOAv9t1fHIhJLAHw"
+docker run -it -e PULSAR_PREFIX_webServicePort=8081 -p 6650:6650 -p 8081:8081
+    --mount source=pulsardata,target=/pulsar/data --mount source=pulsarconf,target=/pulsar/conf
+    apachepulsar/pulsar:2.10.1
+    bin/pulsar standalone
 ```
-
-#### ✅ 5d. Save your Streaming token locally
 
 ## 6. Setup your application
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/datastaxdevs/workshop-ecommerce-app)
-
-### Know your Gitpod
-
-Take a moment to read this entire section since it'll help you with the rest of the workshop as you'll be spending most of your time in Gitpod. If you're familiar with Gitpod, you can easily skip this entire section.
-
-The extreme left side has the explorer view(1). The top left, middle to right is where you'll be editing files(2), etc. and the bottom left, middle to right is what we will refer to as the Gitpod terminal window(3) as shown below.
-
-**👁️ Expected output**
-
-![gitpod](data/img/gitpod-01-home-annotated.png?raw=true)
-
-
-You can always get back to the file explorer view whenever by clicking on the hamburger menu on the top left followed by `View` and `Explorer` as shown below.
-
-![gitpod](data/img/Filexplorer0.png?raw=true)
-
-
-You can allow cutting and pasting into the window by clicking on `Allow` as shown below.
-
-![gitpod](data/img/allow.png?raw=true)
-
-
-✅ **6a: Enter the token**
-
-To run the application you need to provide the credentials and identifier to the application. you will have to provide 4 values in total as shown below
-
-
-Copy the environment sample file as below.
+Open the `.env` file.
 
 ```
-cp .env.example .env
+CASSANDRA_DB_KEYSPACE=ecommerce
+CASSANDRA_DB_ENDPOINTS=127.0.0.1
+CASSANDRA_DB_USERNAME=
+CASSANDRA_DB_PASSWORD=
+CASSANDRA_DB_DC=
+PULSAR_STREAM_URL=pulsar://127.0.0.1:6650
+PULSAR_STREAM_TENANT=ecommerce-aaron
 ```
 
-Open the `.env` file as below.
-
-```
-gp open .env
-```
-
-- In Astra DB go back to home page by clicking the logo
-
-- Select you database `demos` in the left panel and then copy values for `cloud-region` and `database-id` (clusterID) from the details page as shown below.
-
-- *The DatabaseID is located on the home page*
-
-![Ecom Welcome Screen](data/img/astra-config-1.png?raw=true)
-
-- *The Database region (and keyspace) are located in the details page*
-
-![Ecom Welcome Screen](data/img/astra-config-2.png?raw=true)
-
-- Replace `application-token` with values shown on the Astra token screen or picking the values from the CSV token file your dowloaded before including the AstraCS: part of the token.
-
-
-- *Make sure the Token looks something like (with AstraCS: preceeding `AstraCS:xxxxxxxxxxx:yyyyyyyyyyy`*
-
-```yaml
-# Copy this file to .env and fill in the appropriate values. Refer to README.md
-# for instructions on where to find them.
-export ASTRA_DB_ID=
-export ASTRA_DB_REGION=
-export ASTRA_DB_APPLICATION_TOKEN=
-export ASTRA_DB_KEYSPACE=ecommerce
-```
-
-Make sure to inject the environment variables by running the following command
+Make sure to instantiate the environment variables by running the following command
 
 ```
 source .env
@@ -611,92 +423,10 @@ source .env
 Verify that the environment variables are properly setup with the following command
 
 ```
-env | grep -i astra
+env | grep "PULSAR\|CASSANDRA"
 ```
 
-You should see four environment variables (not shown here).
-
-
-[🏠 Back to Table of Contents](#-table-of-contents)
-
-## 7. Run Unit Tests
-
-The application is now set you should be able to interact with your DB. Let's demonstrate some capabilities.
-
-✅ **7a: Use CqlSession**
-
-Interaction with Cassandra are implemented in Java through drivers and the main Class is `CqlSession`.
-
-Higher level frameworks like Spring, Spring Data, or even quarkus will rely on this object so let's make sure it is part of your Spring context with a `@SpringBootTest`.
-
-Let's change to the sub-directory from the terminal window as shown below.
-
-```
-cd backend
-```
-
-Let's run the first test with the following command.
-
-
-```bash
-mvn test -Dtest=com.datastax.tutorials.Test01_Connectivity
-```
-
-**👁️ Expected output**
-
-```bash
-[..init...]
-Execute some Cql (CqlSession)
-+ Your Keyspace: sag_ecommerce
-+ Product Categories:
-Clothing
-Cups and Mugs
-Tech Accessories
-Wall Decor
-List Databases available in your Organization (AstraClient)
-+ Your OrganizationID: e195fbea-79b6-4d60-9291-063d8c9e6364
-+ Your Databases:
-workshops	 : id=8c98b922-aeb0-4435-a0d5-a2788e23dff8, region=eu-central-1
-sample_apps	 : id=c2d6bd3d-6112-47f6-9b66-b033e6174f0e, region=us-east-1
-sdk_tests	 : id=a52f5879-3476-42d2-b5c9-81b18fc6d103, region=us-east-1
-metrics	 : id=d7ded041-3cfb-4dd4-9957-e20003c3ebe2, region=us-east-1
-```
-
-✅ **7b: Working With Spring Data**
-
-Spring Data allows Mapping `Object <=> Table` based on annotation at the java bean level. Then by convention CQL query will be executed under the hood.
-
-```bash
-mvn test -Dtest=com.datastax.tutorials.Test02_SpringData
-```
-
-**👁️ Expected output**
-
-```bash
-Categories:
-- Clothing with children:[T-Shirts, Hoodies, Jackets]
-- Cups and Mugs with children:[Cups, Coffee Mugs, Travel Mugs]
-- Tech Accessories with children:[Mousepads, Wrist Rests, Laptop Covers]
-- Wall Decor with children:[Posters, Wall Art]
-```
-
-✅ **7c: Working With Rest Controller**
-
-`TestRestTemplate` is a neat way to test a web controller. The application will start on a random port with `@SpringBootTest(webEnvironment=WebEnvironment.RANDOM_PORT)`
-
-```bash
-mvn test -Dtest=com.datastax.tutorials.Test03_RestController
-```
-
-**👁️ Expected output**
-
-```bash
-List Categories:
-Clothing
-Cups and Mugs
-Tech Accessories
-Wall Decor
-```
+You should see seven environment variables (not shown here).
 
 [🏠 Back to Table of Contents](#-table-of-contents)
 
@@ -722,23 +452,13 @@ Now click on the `credentials` tab, `+ CREATE CREDENTIALS` tab and finally the `
 
 ![ouath](data/img/Oauthcred0.png?raw=true)
 
-
 You will be presented with a screen for entering the `Authorized JavaScript Origins` and `Authorized redirect URIs` as shown below.
 
 You'll need the following URIs. Make a note of this. We will use `http` instead of `https` as illustrated below.
 
-For the `Authorized JavaScript Origins` use the following value from the Gitpod terminal window,
+For the `Authorized JavaScript Origins` use `http://127.0.0.1/`.
 
-
-```bash
-echo $(gp url 8080 | sed 's/https/http/')
-```
-
-For the `Authorized redirect URIs` use the following from the GitPod terminal window.
-
-```bash
-echo $(gp url 8080 | sed 's/https/http/')/login/oauth2/code/google
-```
+For the `Authorized redirect URIs` use `http://127.0.0.1/login/oauth2/code/google`
 
 Enter the respective values as shown below which enables URI redirection and SSO for the app.
 
@@ -775,62 +495,18 @@ You can install the backend with the credentials using the following command
 
 ```
 cd /workspace/workshop-ecommerce-app
-mvn install -f backend/pom.xml -DskipTests
+mvn clean install
 ```
-
-✅ **9a: Know your public URL**
-
-The workshop application has opened with an ephemeral URL. To know the URL where your application endpoint will be exposed you can run the following command in the terminal after the build has completed. **Please note this URL and we will open this up in a new browser window if required later **.
-
-```bash
-gp url 8080
-```
-**👁️ Expected output**
-
-![gitpod](data/img/gitpod-02-url.png?raw=true)
-
-✅ **9b: Check APIs are not available (yet)**
-
-Run the following command in the Gitpod terminal window
-
-```
-curl localhost:8080/api/v1/products/product/LS534S
-```
-**👁️ Expected output**
-
-```
-curl: (7) Failed to connect to localhost port 8080: Connection refused
-```
-
-Not to be overly concerned as we're going to be starting the application that will be served from the port.
-
-✅ **9c: Start the application**
 
 To start the application, we've provided a very simple convenience script that can be run as below.
 
-```bash
+```
 ./start.sh
 ```
-
-Pay attention to popups being blocked as shown below and allow the popups.
-
-![gitpod](data/img/PopupBlocked.png?raw=true)
-
-You may encounter the following at different steps and although this may not be applicable right away, the steps are included **in advance** and summarized here so that you can keep an eye out for it. Different paths and different environments might be slightly different although Gitpod levels the playing field a bit.
 
 Your e-commerce application should be up and running.
 
 ✅ **9d: Check APIs are now available**
-
-Get back to Gitpod tab/window.
-
-Leave the application running and open up another `shell` in the Gitpod terminal window by clicking on `+` and clicking on `bash` dropdown as shown below.
-
-![gitpod](data/img/gitpod-newbash1.png?raw=true)
-
-This will bring up a new `bash` shell as shown below.
-
-![gitpod](data/img/gitpod-newbash2.png?raw=true)
 
 Issue the following command in that shell as you did earlier.
 
@@ -838,31 +514,9 @@ Issue the following command in that shell as you did earlier.
 curl localhost:8080/api/v1/products/product/LS534S
 ```
 
-and you should see some output indicating that the API server is serving our ecommerce APIs.
+You should see some output indicating that the API server is serving our ecommerce APIs.
 
 **👁️ Expected output**
-
-![gitpod](data/img/gitpod-newbash3.png?raw=true)
-
-Try a few other APIs (**Hint: Look for the `RestController` java files in the respective sub-directories.**).
-
-✅ **9e: OPTIONAL - Open in Gitpod preview window**
-
-This might be useful for troubleshooting if your application does not automatically open up a browser tab.
-
-If you want, you can run the following command to open your application in the preview window of Gitpod (it's much easier to use the app running in browser, though).
-
-```
-gp preview $(gp url 8080)
-```
-
-As indicated in the output below it's a very `Simple Browser`.
-
-**👁️ Expected output**
-
-![gitpod](data/img/gitpod-preview-1.png?raw=true)
-
-If your application is running in the preview window but you have difficulty accessing it from the browser pay attention to popups being blocked by the browser as explained before.
 
 ✅ **9f: Get the Open API specification**
 
