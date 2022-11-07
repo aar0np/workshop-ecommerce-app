@@ -13,8 +13,8 @@ spring:
       client:
         registration:
           google:
-            client-id: change_me
-            client-secret: change_me
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
   data:
     cassandra:
       schema-action: create-if-not-exists
