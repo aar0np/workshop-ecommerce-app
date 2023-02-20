@@ -27,5 +27,7 @@ dist
 .factorypath
 .templates
 template.config.js
+.java-version
 .env
+.env_docker
 backend/src/main/resources/static/*
